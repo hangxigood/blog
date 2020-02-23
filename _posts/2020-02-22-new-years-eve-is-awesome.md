@@ -1,7 +1,3 @@
----
-layout: post
-title: new years eve is awesome
----
 
 ## Hello World！
 
