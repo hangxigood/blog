@@ -2,7 +2,7 @@
 
 You can use the [editor on GitHub](https://github.com/hangxigood/hangxi.GitHub.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
 
-这里是第一篇博文：[Hellow]({% link _posts/2020-2-22-hello-world.md %})
+这里是第一篇博文：[Hellow]({% link _posts/2020-02-22-hello-world.md %})
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
