@@ -2,7 +2,7 @@ title:              Clean Blog
 email:              hangxigood@gmail.com
 description:        A Blog Theme by Start Bootstrap
 author:             Start Bootstrap
-baseurl:            ""
+baseurl:            
 url:                "https://hangxi.github.io"
 
 # Social Profiles
