@@ -1,20 +1,17 @@
-## 秘密基地！
+---
+layout: post
+title: Hello World
+---
+
+## Hello World！
 
 You can use the [editor on GitHub](https://github.com/hangxigood/hangxi.GitHub.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
 
-这里是第一篇博文：[Hellow]({% link _posts/2020-2-22-hello-world.md %})
-
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### 这里是目录
+### Markdown
 
-<ul>
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-    </li>
-  {% endfor %}
-</ul>
+Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
 ```markdown
 Syntax highlighted code block
