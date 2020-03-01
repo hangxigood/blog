@@ -1,0 +1,33 @@
+I"<p><code class="highlighter-rouge">__getattribute__</code>是基类 object 的一个类方法，所有继承 object 的类，都存在这个方法。
+当类的实例的 attribute（属性和方法）被访问时，该方法会被自动调用。</p>
+
+<p>我们可以通过重写 <code class="highlighter-rouge">__getattribute__</code> 来验证这个定律。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Thing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'the __getattribute__ is running'</span><span class="p">)</span>
+</code></pre></div></div>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">t</span> <span class="o">=</span> <span class="n">Thing</span><span class="p">(</span><span class="s">'apple'</span><span class="p">)</span> 
+
+<span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="c1"># 访问 name 属性
+# out: the __getattribute__ is running 
+</span></code></pre></div></div>
+<p>那么 <code class="highlighter-rouge">__getattribute__</code>  有什么作用? 它是如何帮助查询 attribute 的？
+根据<a href="https://docs.python.org/3/howto/descriptor.html#id6">文档</a>，<code class="highlighter-rouge">__getattribute__</code> 的 Python 实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="c1"># self 即类的实例，key 即查询的 attribute 名。
+# 所以如果只查询类的 attribute，是不会调用该方法的。
+</span>    <span class="s">"Emulate type_getattro() in Objects/typeobject.c"</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="c1"># 必须父类查询，不然无限递归，程序崩溃。
+</span>    
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s">'__get__'</span><span class="p">):</span> <span class="c1"># 如果 v 也是一个类并拥有 __get__ 方法，则调用该方法。
+</span>    <span class="c1"># 这里是帮助描述器工作的机制。
+</span>        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="c1">#
+</span>        
+    <span class="k">return</span> <span class="n">v</span> <span class="c1"># 如果不是，则返回查询的 attribute 值。
+</span></code></pre></div></div>
+:ET

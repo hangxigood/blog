@@ -1,0 +1,171 @@
+I"�O<p>在写类的时候，@property 非常好用，它让我们对属性的操作简单得像在面对普通的变量。</p>
+
+<p>例如这样一个类：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Staff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">age</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+</code></pre></div></div>
+<p>我们希望对它的 _age 属性读取或写入，最直接的方法是对实例属性进行操作，例如：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">manager</span> <span class="o">=</span> <span class="n">Staff</span><span class="p">(</span><span class="s">'李'</span><span class="p">,</span><span class="mi">29</span><span class="err">）</span>
+
+<span class="n">manager</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="mi">33</span>
+
+<span class="n">manager</span><span class="o">.</span><span class="n">_age</span> 
+<span class="c1"># out: 33
+</span></code></pre></div></div>
+<p>但这种方法并不安全，因为我们可以给 manager._age 赋予任何不合理的数值。
+如果想避免这种情况，我们希望对赋予的数值作检查，那可以通过定义一些类方法实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Staff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">age</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+
+	<span class="k">def</span> <span class="nf">get_age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># 类方法：读取 _age 属性
+</span>		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+
+	<span class="k">def</span> <span class="nf">set_age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">age</span><span class="p">):</span> <span class="c1"># 类方法：赋值 _age 属性
+</span>		<span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="p">:</span>
+		   <span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+		<span class="k">else</span><span class="p">:</span>
+		   <span class="k">print</span><span class="p">(</span><span class="s">'请输入正确的年龄。'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>这样，我们在创造并使用实例的时候，就能用这两个方法，对 _age 属性进行更安全的操作，例如：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">manager</span> <span class="o">=</span> <span class="n">Staff</span><span class="p">(</span><span class="s">'李'</span><span class="p">,</span><span class="mi">29</span><span class="err">）</span><span class="c1"># 创造一个实例
+</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">get_age</span><span class="p">()</span> 
+<span class="c1"># out：29
+</span><span class="n">manager</span><span class="o">.</span><span class="n">set_age</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span>  <span class="c1"># 为 manager_age 赋值为 23
+</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">get_age</span><span class="p">()</span>  <span class="c1">#此时 manager_age 已经是 23
+# out：23
+</span></code></pre></div></div>
+<p>但如果定义类的时候使用了 @property，例如：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Staff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">age</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+	
+	<span class="o">@</span><span class="nb">property</span>
+	<span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+	
+	<span class="o">@</span><span class="n">age</span><span class="o">.</span><span class="n">setter</span>
+	<span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">age</span><span class="p">):</span> 
+		<span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="p">:</span>
+		   <span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+		<span class="k">else</span><span class="p">:</span>
+		   <span class="k">print</span><span class="p">(</span><span class="s">'请输入正确的年龄。'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>在对 _age 属性进行读写操作的时候，就可以避免复杂的类方法调用，就像这样 ：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">manager</span> <span class="o">=</span> <span class="n">Staff</span><span class="p">(</span><span class="s">'李'</span><span class="p">,</span><span class="mi">29</span><span class="err">）</span><span class="c1"># 创造一个实例
+</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">age</span>
+<span class="c1"># out：29
+</span><span class="n">manager</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># 为 manager_age 赋值为 3
+# out：请输入正确的年龄。
+</span></code></pre></div></div>
+<p>在觉得好用的同时，我很好奇 @property 是怎么做到的。</p>
+
+<h2 id="property-实现原理">@property 实现原理</h2>
+
+<p>根据 Python 的 @语法，我们知道</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="o">@</span><span class="nb">property</span>
+	<span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+</code></pre></div></div>
+<p>其实等同于</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+	<span class="n">age</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>而 property 是 Python 自带的一个 functions ，由于其带有<code class="highlighter-rouge">__get__</code> 、<code class="highlighter-rouge">__set__</code>、<code class="highlighter-rouge">__delete__</code>方法，所以它是一个 descriptor。</p>
+
+<p>根据 <a href="https://docs.python.org/3.2/howto/descriptor.html#properties">descriptor描述</a> 其 property 类代码如下（Python 实现）。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">property</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> 
+    <span class="s">"Emulate PyProperty_Type() in Objects/descrobject.c"</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fget</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fget</span> <span class="o">=</span> <span class="n">fget</span> <span class="c1"># 读取的方法
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">fset</span> <span class="o">=</span> <span class="n">fset</span> <span class="c1"># 赋值的方法
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span> <span class="o">=</span> <span class="n">fdel</span> <span class="c1"># 删除的方法
+</span>        <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">fget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">fget</span><span class="o">.</span><span class="n">__doc__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
+
+    <span class="k">def</span> <span class="nf">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">objtype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span> <span class="c1"># self 即是 age 这个实例。obj 是__getattribute__ 传递过来的实例 manager 。
+</span>        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fget</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nb">AttributeError</span><span class="p">(</span><span class="s">"unreadable attribute"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fget</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="c1"># 返回 manager 中的 fget 即 get_age() 的结果
+</span>
+    <span class="k">def</span> <span class="nf">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fset</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nb">AttributeError</span><span class="p">(</span><span class="s">"can't set attribute"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fset</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nb">AttributeError</span><span class="p">(</span><span class="s">"can't delete attribute"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fget</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">fget</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="n">fset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deleter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fdel</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fset</span><span class="p">,</span> <span class="n">fdel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>此时的 age 已经是 property 类创造出的实例，当我们通过 <code class="highlighter-rouge">manager.age</code> 访问 age 属性时，<code class="highlighter-rouge">__getattribute__</code> 被自动调用，并查询和调用 age 的<code class="highlighter-rouge">__get__</code>方法，最终返回<code class="highlighter-rouge">get_age()</code>的结果，成功访问了 manager.age 属性。</p>
+
+<p>同理，此时我们再作赋值的函数装饰。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">@</span><span class="n">age</span><span class="o">.</span><span class="n">setter</span>
+<span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">age</span><span class="p">):</span> 
+	<span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="p">:</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'请输入正确的年龄。'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>其实等同于</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">set_age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">age</span><span class="p">):</span> 
+	<span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="p">:</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">'请输入正确的年龄。'</span><span class="p">)</span>
+<span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="o">.</span><span class="n">setter</span><span class="p">(</span><span class="n">set_age</span><span class="p">)</span>
+</code></pre></div></div>
+<p>注意：这里把上面的 age 改成 set_age 了，因为 @ 语法除了直接的函数套入，还会使原函数无效化，所以可以直接用 age 。现在不用 @ 语法则必须改名，否则上面的 age 是一个 Property 实例，这里就又被重写为一个函数了。</p>
+
+<p>而<code class="highlighter-rouge">age = age.setter(set_age)</code> 根据 Property 类的 setter 方法描述：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">......</span>
+    <span class="k">def</span> <span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fset</span><span class="p">):</span> <span class="c1"># 给 age 传入 fset（即 set_age）
+</span>        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="n">fset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fdel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span> 
+        <span class="c1"># 返还一个新的 Property 类实例，self.fset 是上面定义的 age ， self.fset 则是这次传入的 set_age。
+</span><span class="o">......</span>
+</code></pre></div></div>
+<p>实际就是再次定义 age ， <code class="highlighter-rouge">age = Property(age,set_age)</code></p>
+
+<p>此时，再对 manager.age 赋值时，将自动调用 <code class="highlighter-rouge">__setattr__</code> 函数（与 <code class="highlighter-rouge">__getattribute__</code> 类似的一种拦截器，在实例属性被赋值时自动调用。），查找并调用 <code class="highlighter-rouge">__set__</code> ，并将赋予的值作为 value 传入，再调用 <code class="highlighter-rouge">set_age(value)</code>，实现赋值。</p>
+
+<p>至此，@property原理简单探究就基本结束。</p>
+
+:ET

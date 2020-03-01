@@ -1,0 +1,2 @@
+I"�<p>@property的本质就是一个 Python 自带的 functions，让代码变得更高效整洁。它的使用涉及到Python 的 @ 语法，访问拦截器 <strong>getattribute</strong> 等知识。</p>
+:ET

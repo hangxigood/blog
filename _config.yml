@@ -4,27 +4,27 @@ email: hangxigood@gmail.com
 description: > # this means to ignore newlines until "show_exerpts:"
   Some study notes
 show_excerpts: true # set to true to show excerpts on the homepage
-baseurl: /
+baseurl: 
 
 # Minima date format
 # refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
 sass:
   sass_dir: _sass
 
-permalink: /posts/:title/
+permalink: 
 texture:
-  title: Frank.Xiang
-  tagline: Seeker
+  title: Frank Xiang
+  tagline:  Some study notes
   date_format: "%b %-d, %Y"
   style: black
-  showNav: false
-  showPicker: false
+  showNav: False
+  showPicker: False
 
   # generate social links in footer
   social_links:
-    twitter: thelehhman
+    twitter: 
     github:  hangxigood
-    linkedIn: in/thelehhman
+    linkedIn: 
     rss: rss
  
 

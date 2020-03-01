@@ -1,0 +1,190 @@
+---
+layout: post
+title:  "@property原理简单探究"
+description:  "@property的本质就是一个 Python 自带的 functions，让代码变得更高效整洁。它的使用涉及到Python 的 @ 语法，访问拦截器 __getattribute__ 等知识。"
+date:   2020-02-25 21:03:36
+categories: Python
+---
+
+在写类的时候，@property 非常好用，它让我们对属性的操作简单得像在面对普通的变量。
+
+例如这样一个类：
+
+```python
+class Staff(object):
+	def __init__(self,name,age):
+		self._name = name
+		self._age = age
+```
+我们希望对它的 _age 属性读取或写入，最直接的方法是对实例属性进行操作，例如：
+
+```python
+manager = Staff('李',29）
+
+manager._age = 33
+
+manager._age 
+# out: 33
+```
+但这种方法并不安全，因为我们可以给 manager._age 赋予任何不合理的数值。
+如果想避免这种情况，我们希望对赋予的数值作检查，那可以通过定义一些类方法实现：
+
+```python
+class Staff(object):
+
+	def __init__(self,name,age):
+		self._name = name
+		self._age = age
+
+	def get_age(self): # 类方法：读取 _age 属性
+		return self._age
+
+	def set_age(self,age): # 类方法：赋值 _age 属性
+		if age >= 18:
+		   self._age = age
+		else:
+		   print('请输入正确的年龄。')
+```
+这样，我们在创造并使用实例的时候，就能用这两个方法，对 _age 属性进行更安全的操作，例如：
+
+```python
+manager = Staff('李',29）# 创造一个实例
+
+manager.get_age() 
+# out：29
+manager.set_age(23)  # 为 manager_age 赋值为 23
+
+manager.get_age()  #此时 manager_age 已经是 23
+# out：23
+```
+但如果定义类的时候使用了 @property，例如：
+
+```python
+class Staff(object):
+
+	def __init__(self,name,age):
+		self._name = name
+		self._age = age
+	
+	@property
+	def age(self): 
+		return self._age
+	
+	@age.setter
+	def age(self,age): 
+		if age >= 18:
+		   self._age = age
+		else:
+		   print('请输入正确的年龄。')
+```
+
+在对 _age 属性进行读写操作的时候，就可以避免复杂的类方法调用，就像这样 ：
+
+```python
+manager = Staff('李',29）# 创造一个实例
+
+manager.age
+# out：29
+manager.age = 3  # 为 manager_age 赋值为 3
+# out：请输入正确的年龄。
+```
+在觉得好用的同时，我很好奇 @property 是怎么做到的。
+
+## @property 实现原理
+
+根据 Python 的 @语法，我们知道 
+
+```python
+	@property
+	def age(self): 
+		return self._age
+```
+其实等同于
+
+```python
+	def age(self): 
+		return self._age
+	age = property(age)
+```
+
+而 property 是 Python 自带的一个 functions ，由于其带有``` __get__``` 、``` __set__```、``` __delete__```方法，所以它是一个 descriptor。
+
+根据 [descriptor描述](https://docs.python.org/3.2/howto/descriptor.html#properties) 其 property 类代码如下（Python 实现）。
+
+```python
+class property(object): 
+    "Emulate PyProperty_Type() in Objects/descrobject.c"
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.fget = fget # 读取的方法
+        self.fset = fset # 赋值的方法
+        self.fdel = fdel # 删除的方法
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+        self.__doc__ = doc
+
+    def __get__(self, obj, objtype=None): # self 即是 age 这个实例。obj 是__getattribute__ 传递过来的实例 manager 。
+        if obj is None:
+            return self
+        if self.fget is None:
+            raise AttributeError("unreadable attribute")
+        return self.fget(obj) # 返回 manager 中的 fget 即 get_age() 的结果
+
+    def __set__(self, obj, value):
+        if self.fset is None:
+            raise AttributeError("can't set attribute")
+        self.fset(obj, value)
+
+    def __delete__(self, obj):
+        if self.fdel is None:
+            raise AttributeError("can't delete attribute")
+        self.fdel(obj)
+
+    def getter(self, fget):
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+    def setter(self, fset):
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+    def deleter(self, fdel):
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+```
+
+此时的 age 已经是 property 类创造出的实例，当我们通过 ```manager.age``` 访问 age 属性时，```__getattribute__``` 被自动调用，并查询和调用 age 的```__get__```方法，最终返回```get_age()```的结果，成功访问了 manager.age 属性。
+
+同理，此时我们再作赋值的函数装饰。
+
+```python
+@age.setter
+def age(self,age): 
+	if age >= 18:
+		self._age = age
+	else:
+		print('请输入正确的年龄。')
+```
+其实等同于
+
+```python
+def set_age(self,age): 
+	if age >= 18:
+		self._age = age
+	else:
+		print('请输入正确的年龄。')
+age = age.setter(set_age)
+```
+注意：这里把上面的 age 改成 set_age 了，因为 @ 语法除了直接的函数套入，还会使原函数无效化，所以可以直接用 age 。现在不用 @ 语法则必须改名，否则上面的 age 是一个 Property 实例，这里就又被重写为一个函数了。
+
+而```age = age.setter(set_age)``` 根据 Property 类的 setter 方法描述：
+
+```python
+......
+    def setter(self, fset): # 给 age 传入 fset（即 set_age）
+        return type(self)(self.fget, fset, self.fdel, self.__doc__) 
+        # 返还一个新的 Property 类实例，self.fset 是上面定义的 age ， self.fset 则是这次传入的 set_age。
+......
+```
+实际就是再次定义 age ， ```age = Property(age,set_age)``` 
+
+此时，再对 manager.age 赋值时，将自动调用 ```__setattr__``` 函数（与 ```__getattribute__``` 类似的一种拦截器，在实例属性被赋值时自动调用。），查找并调用 ```__set__``` ，并将赋予的值作为 value 传入，再调用 ```set_age(value)```，实现赋值。
+
+至此，@property原理简单探究就基本结束。
+
